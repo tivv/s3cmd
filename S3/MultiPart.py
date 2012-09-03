@@ -50,6 +50,7 @@ class MultiPartUpload(object):
     MAX_CHUNK_SIZE_MB = 5120    # 5GB
     MAX_CHUNKS = 100
     MAX_FILE_SIZE = 42949672960 # 5TB
+    _max_id = -1
 
     def __init__(self, s3, file, uri):
         self.s3 = s3
@@ -98,7 +99,7 @@ class MultiPartUpload(object):
             else:
                 self.upload_part(data, id)
             id += 1
-
+        self._max_id = id
         if num_threads > 1:
             debug("Thread pool with %i threads and %i tasks awaiting completion." % (num_threads, id))
             pool.wait_completion()
@@ -110,12 +111,12 @@ class MultiPartUpload(object):
         """
         # TODO implement Content-MD5
         content_length = str(len(data))
-        info("Uploading part %i of %r (%s bytes)" % (id, self.upload_id, content_length))
+        info("Uploading part %i/%i of %r (%s bytes)" % (id, self._max_id, self.upload_id, content_length))
         headers = { "content-length": content_length }
         query_string = "?partNumber=%i&uploadId=%s" % (id, self.upload_id)
         request = self.s3.create_request("OBJECT_PUT", uri = self.uri, headers = headers, extra = query_string)
         response = self.s3.send_request(request, body = data)
-        info("Upload done for part %i of %r (%s bytes)" % (id, self.upload_id, content_length))
+        info("Upload done for part %i/%i of %r (%s bytes)" % (id, self._max_id, self.upload_id, content_length))
 
         self.parts[id] = response["headers"]["etag"]
 
