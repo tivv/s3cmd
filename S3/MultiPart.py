@@ -110,11 +110,12 @@ class MultiPartUpload(object):
         """
         # TODO implement Content-MD5
         content_length = str(len(data))
-        debug("Uploading part %i of %r (%s bytes)" % (id, self.upload_id, content_length))
+        info("Uploading part %i of %r (%s bytes)" % (id, self.upload_id, content_length))
         headers = { "content-length": content_length }
         query_string = "?partNumber=%i&uploadId=%s" % (id, self.upload_id)
         request = self.s3.create_request("OBJECT_PUT", uri = self.uri, headers = headers, extra = query_string)
         response = self.s3.send_request(request, body = data)
+        info("Upload done for part %i of %r (%s bytes)" % (id, self.upload_id, content_length))
 
         self.parts[id] = response["headers"]["etag"]
 
