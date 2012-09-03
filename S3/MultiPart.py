@@ -48,7 +48,7 @@ class MultiPartUpload(object):
 
     MIN_CHUNK_SIZE_MB = 5       # 5MB
     MAX_CHUNK_SIZE_MB = 5120    # 5GB
-    MAX_CHUNKS = 100
+    MAX_CHUNKS = 1000
     MAX_FILE_SIZE = 42949672960 # 5TB
     _max_id = -1
 
